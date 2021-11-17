@@ -1,6 +1,12 @@
-open Gfile
+open Gfile;;
+open Printf;;
+open Graph;;
+open Tools;;
+
 
 let () =
+
+
 
   (* Check the number of command-line arguments *)
   if Array.length Sys.argv <> 5 then
@@ -21,10 +27,11 @@ let () =
   in
 
   (* Open file *)
-  let graph = from_file infile in
+  let graph = from_file infile  in
 
+  let test = add_arc graph 0 2 2 in
   (* Rewrite the graph that has been read. *)
-  let () = write_file outfile graph in
+  let () = write_file outfile test in
+
 
   ()
-

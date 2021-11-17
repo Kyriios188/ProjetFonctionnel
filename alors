@@ -1,0 +1,15 @@
+_si on enlève les type ça ne marche plus (alors qu'on importe tout)
+_si on enlève open Graph ça marche plus (alors qu'il est dans Gfile)
+
+_"This expression has type string Graph.graph
+but an expression was expected of type 'a graph = (id * 'a out_arcs) list"
+---> ??????????
+
+_"This expression has type 'a Graph.graph
+but an expression was expected of type ('b * 'c) list"
+---> idem
+
+_"Graph.graph is abstract because no corresponding cmi file was found in path"
+---> c'est un problème ? 
+
+
