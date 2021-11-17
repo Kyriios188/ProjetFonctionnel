@@ -29,9 +29,16 @@ let () =
   (* Open file *)
   let graph = from_file infile  in
 
-  let test = add_arc graph 0 2 2 in
-  (* Rewrite the graph that has been read. *)
-  let () = write_file outfile test in
+  (*
+    let int_graph = gmap graph int_of_string in
+
+    let test = add_arc int_graph 0 5 2 in
+
+    let res_test = gmap test string_of_int in
+    (* Rewrite the graph that has been read. *)
+  *)
+  (* let () = write_file outfile res_test in *)
+  let () = export outfile graph in
 
 
   ()
