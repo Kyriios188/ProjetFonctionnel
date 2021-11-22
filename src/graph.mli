@@ -7,7 +7,6 @@ type id = int
 
 exception Graph_error of string
 
-
 (**************  CONSTRUCTORS  **************)
 
 (* The empty graph. *)
