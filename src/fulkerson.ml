@@ -30,18 +30,21 @@ _n2 inutilisé
 (* Ne modifie pas le graph donné, donne juste un chemin augmentant *)
 let find_augmenting_path (gr:int graph) (work_gr:int graph) (n1:id) (n2:id) = 
 
+  Printf.printf "Début de l'algorithme\n";
+
   (* Prend une liste d'arcs en entrée et doit trouver Some arc valide ou retourner None *)
   let rec find_aug_arc (gr:int graph) (work_gr: int graph) arc_list begin_node visited_nodes = match arc_list with
     | [] -> None
 
     (* On décompose l'arc sortant en node d'arrivée et label *)
     | (next_node, work_label)::t -> begin
-
+        Printf.printf "Je regarde la node d'arrivée %d\n%!" next_node;
         match (find_arc gr begin_node next_node) with
         | None -> failwith "Le graph de travail n'est pas compatible avec le graph de référence"
         (* On vérifie si l'arc augmente la valeur et si la node d'arrivée n'est pas marquée *)
-        | Some label_arc_ref -> if label_arc_ref - work_label >= 1 && (List.mem next_node visited_nodes) then Some (next_node, work_label)
-        (* L'arc n'est pas valide *)
+        | Some label_arc_ref -> Printf.printf "On peut augmenter de %d\n%!" (label_arc_ref - work_label);
+          if label_arc_ref - work_label >= 1 && (List.mem next_node visited_nodes) then Some (next_node, work_label)
+          (* L'arc n'est pas valide *)
           else find_aug_arc gr work_gr t begin_node visited_nodes
       end
 
@@ -58,6 +61,7 @@ let find_augmenting_path (gr:int graph) (work_gr:int graph) (n1:id) (n2:id) =
         match (find_aug_arc gr work_gr l n visited_nodes) with
         (* Aucun arc augmentant pour cette node *)
         | None -> begin
+            Printf.printf "Aucun arc trouvé partant de %d\n%!" n;
             (* On prend la prochaine node à parcourir dans l'ordre *)
             let next_node = (heap_top (unstack h)) in
             match next_node with
@@ -65,7 +69,7 @@ let find_augmenting_path (gr:int graph) (work_gr:int graph) (n1:id) (n2:id) =
             | Some x -> find_aug_path gr work_gr x n2 (x::visited_nodes) (unstack h)
           end
         (* On a trouvé un arc valide, on se déplace *)
-        | Some (next_node, label) -> find_aug_path gr work_gr next_node n2 visited_nodes (stack h n)
+        | Some (next_node, label) -> Printf.printf "trouvé arc vers %d label=%d\n%!" next_node label; find_aug_path gr work_gr next_node n2 visited_nodes (stack h n)
       end
   in
 
