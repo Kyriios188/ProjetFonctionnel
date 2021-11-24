@@ -17,7 +17,7 @@ let heap_top (h:heap) = match h with
   | [] -> None
   | x::t -> Some x
 
-let print_heap h = List.iter (Printf.printf "%d ") h
+let print_heap h = List.iter (Printf.printf "%d ") h; Printf.printf "\n%!"
 
 (* 
 TODO list 
@@ -25,11 +25,46 @@ _ajouter le cas où on parcours un arc entrant (on remonte)
 _avec ce cas, utiliser le successeur pour pas revenir en arrière
 *)
 
+(* 
+On a une liste type [5; 4; 2; 0] qui retrace le chemin 0->2->4->5 
+et on veut metre à jour les arcs correspondants avec le bon nombre
+*)
+let update_work_graph ref_gr w_gr heap =
+
+  let rec find_update_value (ref_gr:int graph) (w_gr: int graph) (h:heap) (acu:int) = match h with
+    | [] | [_] -> acu (* Si ya 0 ou 1 éléments on a parcouru tous les arcs *)
+    | x::t -> begin 
+        let y = List.hd t in
+        (* Printf.printf "Augmentation %d->%d\n%!" x y; *)
+
+        match [(find_arc ref_gr x y); (find_arc w_gr x y)] with
+        (* Si cet arc est plus restictif que les précédents, on baisse la valeur d'augmentation *)
+        | [Some ref_label; Some work_label] -> (* Printf.printf "On peut augmenter de %d à %d\n%!" work_label ref_label; *)
+          if ref_label - work_label < acu then find_update_value ref_gr w_gr t (ref_label-work_label) 
+          else find_update_value ref_gr w_gr t acu
+
+        | _ -> failwith "Les deux graphs sont incompatibles" (* Si ya un None c'est qu'on a pas trouvé l'arc dans un graph *)
+      end
+
+  in
+
+  let rec update_graph acu_gr h update_value = match h with
+    | [] | [_] -> acu_gr
+    | x::t -> let y = List.hd t in update_graph (add_arc acu_gr x y update_value) t update_value
+  in
+
+  let rev_heap = (List.rev heap) in
+  (* On part du principe qu'il existe une arête de flot inférieur à 99999 dans le chemin parcouru *)
+  let value = find_update_value ref_gr w_gr rev_heap 99999 in 
+
+  Printf.printf "Valeur d'augmentation trouvée : %d\n%!" value;
+
+  update_graph w_gr rev_heap value
+
+
 
 (* Ne modifie pas le graph donné, donne juste un chemin augmentant *)
 let find_augmenting_path (gr:int graph) (work_gr:int graph) (n_debut:id)= 
-
-  Printf.printf "Début de l'algorithme\n";
 
   (* Prend une liste d'arcs en entrée et doit trouver Some arc valide ou retourner None *)
   let rec find_aug_arc (gr:int graph) (work_gr: int graph) arc_list begin_node visited_nodes = match arc_list with

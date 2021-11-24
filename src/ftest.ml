@@ -37,9 +37,14 @@ let () =
   (* On créé le graph de référence format int graph *)
   let ref_graph = gmap graph (int_of_string) in
 
-  let test = find_augmenting_path ref_graph work_graph 0 in
+  let test_heap = find_augmenting_path ref_graph work_graph 0 in
 
-  print_heap test;
-  (* Cannot unstack empty heap ! *)
+  print_heap test_heap;
+
+  (* On met à jour le graph *)
+  let updated_work_graph = update_work_graph ref_graph work_graph test_heap in
+
+  (* On affiche le résultat au format string *)
+  let () = export outfile (gmap updated_work_graph string_of_int) in
 
   ()

@@ -10,3 +10,4 @@ val print_heap: heap -> unit
 
 (* Uses depth first search to find an augmenting path in the given graph *)
 val find_augmenting_path: int graph -> int graph -> int -> heap
+val update_work_graph: int graph -> int graph -> heap -> int graph
