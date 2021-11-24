@@ -2,6 +2,7 @@ open Gfile;;
 open Printf;;
 open Graph;;
 open Tools;;
+open Fulkerson;;
 
 
 let () =
@@ -27,18 +28,18 @@ let () =
   in
 
   (* Open file *)
+  (* graph est un string graph *)
   let graph = from_file infile  in
 
-  (*
-    let int_graph = gmap graph int_of_string in
+  (* On créé un work_graph format int graph *)
+  let work_graph = gmap graph (fun x -> 0) in
 
-    let test = add_arc int_graph 0 5 2 in
+  (* On créé le graph de référence format int graph *)
+  let ref_graph = gmap graph (int_of_string) in
 
-    let res_test = gmap test string_of_int in
-    (* Rewrite the graph that has been read. *)
-  *)
-  (* let () = write_file outfile res_test in *)
-  let () = export outfile graph in
+  let test = find_augmenting_path ref_graph work_graph 0 5 in
 
+  print_heap test;
+  (* Cannot unstack empty heap ! *)
 
   ()

@@ -1,0 +1,4 @@
+let () = export outfile graph in
+()
+
+dot -Tsvg outfile > nom_image_graph.svg
