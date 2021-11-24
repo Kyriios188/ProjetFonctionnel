@@ -37,7 +37,7 @@ let () =
   (* On créé le graph de référence format int graph *)
   let ref_graph = gmap graph (int_of_string) in
 
-  let test = find_augmenting_path ref_graph work_graph 0 5 in
+  let test = find_augmenting_path ref_graph work_graph 0 in
 
   print_heap test;
   (* Cannot unstack empty heap ! *)
