@@ -2,6 +2,14 @@
 (* ///// TESTS EN COURS /////*)
 (* ///////////////////////// *)
 
+
+
+
+
+(* ///////////////////////// *)
+(* ///// TESTS REUSSIS ///// *)
+(* ///////////////////////// *)
+
 (* Test find_augmenting_path *)
 
 (* graph est un string graph *)
@@ -14,9 +22,16 @@ let test = find_augmenting_path ref_graph work_graph 0 5 in
 print_heap test;
 ()
 
-(* ///////////////////////// *)
-(* ///// TESTS REUSSIS ///// *)
-(* ///////////////////////// *)
+(* Test update_work_graph *)
+(* Open file *)
+(* graph est un string graph *)
+let graph = from_file infile  in
+let work_graph = gmap graph (fun x -> 0) in
+let ref_graph = gmap graph (int_of_string) in
+let test_heap = find_augmenting_path ref_graph work_graph 0 in
+let updated_work_graph = update_work_graph ref_graph work_graph test_heap in
+let () = export outfile (gmap updated_work_graph string_of_int) in
+()
 
 (* Test work_graph -> work_graph.svg dans le dossier graphs *)
 

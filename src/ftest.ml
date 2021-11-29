@@ -31,20 +31,9 @@ let () =
   (* graph est un string graph *)
   let graph = from_file infile  in
 
-  (* On créé un work_graph format int graph *)
-  let work_graph = gmap graph (fun x -> 0) in
-
-  (* On créé le graph de référence format int graph *)
-  let ref_graph = gmap graph (int_of_string) in
-
-  let test_heap = find_augmenting_path ref_graph work_graph 0 in
-
-  print_heap test_heap;
-
-  (* On met à jour le graph *)
-  let updated_work_graph = update_work_graph ref_graph work_graph test_heap in
+  let graph_resultat = fulkerson graph int_of_string _source _sink in
 
   (* On affiche le résultat au format string *)
-  let () = export outfile (gmap updated_work_graph string_of_int) in
+  let () = export outfile (gmap graph_resultat string_of_int) in
 
   ()
