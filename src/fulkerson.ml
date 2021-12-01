@@ -93,38 +93,59 @@ let find_augmenting_path (gr:int graph) (work_gr:int graph) (n_debut:id) (n_fin:
 
   in
 
+(*
+Conditions d'arrêt :
+_on atteint la node d'arrivée
+_on ne trouve pas d'arc aumgentant partant d'une node qui est la node de début
+ *)
+
   (* On créé une liste de nodes visitées, une pile et une valeur d'augmentation *)
-  let rec find_aug_path gr work_gr n visited_nodes h = match (out_arcs work_gr n) with
+  let rec find_aug_path gr work_gr n n_fin visited_nodes h = 
 
-    (* n est pas dans la pile, c'est le next_node de l'itération précédente *)
+    (* On définit la méthode pour changer de node *)
+    (* Lance find_aug_path pour la prochaine node dans la pile *)
+    (* Au début de go_next, la node sans issue est dans la pile *)
+    (* A la fin de go_next, la node sans issue n'est plus dans la pile *)
+    let go_next gr work_gr n_fin visited_nodes h = 
+      let next_node = (heap_top (unstack h)) in
+      match next_node with
+      | None -> raise Flot_optimal (* On a atteint la source et on a essayé de la dépiler i.e. la source est visitée *)
+      (* Une node n'est visitée que si on a exploré tout ses chemins et qu'il n'y en a aucun de valide *)
+      | Some x -> find_aug_path gr work_gr x n_fin visited_nodes (unstack h) 
+    in
 
-    (* ////////////////////// C FO /////////////////////// *)
-    | [] -> h (* On renvoie le puit avec, c'est n2 et n *)
+    (* Si on atteint la node d'arrivée on a trouvé un chemin augmentant *)
+    (* Dans ce cas là même pas besoin de regarde les arcs sortants *)
+    if n==n_fin then h else
 
-    (* Il y a des arcs sortants pour la node sélectionnée *)
-    | l ->  begin (* Printf.printf "visited_nodes : "; List.iter (Printf.printf "%d ") visited_nodes; *)
-        match (find_aug_arc gr work_gr l n visited_nodes) with
-        (* Aucun arc augmentant pour cette node *)
-        | None -> begin
-            Printf.printf "Aucun arc augmentant trouvé partant de %d\n%!" n; print_heap h;
-            (* On prend la prochaine node à parcourir dans l'ordre *)
-            let next_node = (heap_top (unstack h)) in
-            match next_node with
-            | None -> raise Flot_optimal (* On a atteint la source et on a essayé de la dépiler i.e. la source est visitée *)
-            (* Une node n'est visitée que si on a exploré tout ses chemins et qu'il n'y en a aucun de valide *)
-            | Some x -> find_aug_path gr work_gr x (n::visited_nodes) (unstack h)
-          end
-        (* On a trouvé un arc valide, on se déplace *)
-        | Some (next_node, label) -> Printf.printf "trouvé arc %d->%d valide\n%!" n next_node; find_aug_path gr work_gr next_node visited_nodes (stack h next_node)
-      end
+      (* On étudie les arcs sortants de la node actuelle n *)
+      match (out_arcs work_gr n) with
+      (* n est dans la pile, c'est le next_node de l'itération précédente *)
+
+      (* Si on arrive au puit, on sait que ce n'est pas la node de fin grâce au if précédent donc on remonte *)
+      | [] -> go_next gr work_gr n_fin (n::visited_nodes) h
+
+      (* Il y a des arcs sortants pour la node sélectionnée *)
+      | l ->  begin (* Printf.printf "visited_nodes : "; List.iter (Printf.printf "%d ") visited_nodes; *)
+          match (find_aug_arc gr work_gr l n visited_nodes) with
+
+          (* Aucun arc augmentant pour cette node parmis les arcs sortants *)
+          | None -> Printf.printf "Aucun arc augmentant trouvé partant de %d\n%!" n; print_heap h;
+            (* On va chercher dans h la prochaine node sur laquelle itérer *)
+            (* Si il n'y en a plus, on a visité la source et l'algorithme termine *)
+            go_next gr work_gr n_fin (n::visited_nodes) h
+
+          (* On a trouvé un arc valide, on se déplace *)
+          | Some (next_node, label) -> Printf.printf "trouvé arc %d->%d valide\n%!" n next_node; find_aug_path gr work_gr next_node n_fin visited_nodes (stack h next_node)
+        end
   in
 
-  find_aug_path gr work_gr n_debut [] [n_debut]
+  find_aug_path gr work_gr n_debut n_fin [] [n_debut]
 
 
 
 
-let fulkerson (gr:'a graph) (conversion) (node_debut:id) (node_fin:id) = 
+let fulkerson (gr:'a graph) (conversion: 'a -> int) (node_debut:id) (node_fin:id) = 
   let work_graph = gmap gr (fun x -> 0) in
 
   let ref_graph = gmap gr (conversion) in
