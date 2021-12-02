@@ -1,4 +1,3 @@
-let () = export outfile graph in
-()
+./ftest.native graphs/graph1 0 5 outfile
 
 dot -Tsvg outfile > nom_image_graph.svg

@@ -31,6 +31,8 @@ let () =
   (* graph est un string graph *)
   let graph = from_file infile  in
 
+  let () = export "graph_entree" graph in
+
   let graph_resultat = fulkerson graph int_of_string _source _sink in
 
   (* On affiche le résultat au format string *)

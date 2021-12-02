@@ -60,7 +60,7 @@ let export path graph =
   (* Write in this file. *)
   fprintf ff "digraph finite_state_machine {\n
 	rankdir=LR;\n
-  \tsize=\"8,5\";\n
+  \tsize=\"16,10\";\n
   \tnode [shape = circle];\n%!";
 
   (* Fonction qui s'applique sur chaque node *)

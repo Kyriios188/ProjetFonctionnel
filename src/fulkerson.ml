@@ -24,15 +24,15 @@ let print_heap h = List.iter (Printf.printf "%d ") h; Printf.printf "\n%!"
 TODO list 
 _ajouter le cas où on parcours un arc entrant (on remonte)
 _avec ce cas, utiliser le successeur pour pas revenir en arrière
-_faut vérifier qu'on est sur le sink en fait, condition d'arrêt pas bonne
 *)
 
 (* 
 On a une liste type [5; 4; 2; 0] qui retrace le chemin 0->2->4->5 
 et on veut metre à jour les arcs correspondants avec le bon nombre
 *)
+(* heap est à l'envers *)
 let update_work_graph ref_gr w_gr heap =
-
+  (* h est à l'endroit quand on appelle la fonction *)
   let rec find_update_value (ref_gr:int graph) (w_gr: int graph) (h:heap) (acu:int) = match h with
     | [] | [_] -> acu (* Si ya 0 ou 1 éléments on a parcouru tous les arcs *)
     | x::t -> begin 
@@ -49,10 +49,13 @@ let update_work_graph ref_gr w_gr heap =
       end
 
   in
-
+  (* h est à l'endroit quand on appelle la fonction *)
   let rec update_graph acu_gr h update_value = match h with
     | [] | [_] -> acu_gr
-    | x::t -> let y = List.hd t in update_graph (add_arc acu_gr x y update_value) t update_value
+    | x::(y::t) -> begin
+        let un = update_graph (add_arc acu_gr x y update_value) (y::t) update_value in
+        update_graph (add_arc un y x (-update_value)) (y::t) update_value
+      end
   in
 
   let rev_heap = (List.rev heap) in
@@ -68,7 +71,7 @@ let update_work_graph ref_gr w_gr heap =
 let find_capacite gr work_label begin_node next_node =
 
   match (find_arc gr begin_node next_node) with
-  | None -> failwith "Le graph de travail n'est pas compatible avec le graph de référence"
+  | None -> -work_label
   (* On vérifie si l'arc augmente la valeur et si la node d'arrivée n'est pas marquée *)
   | Some label_arc_ref -> Printf.printf "On peut augmenter de %d\n%!" (label_arc_ref - work_label); (label_arc_ref - work_label)
 
@@ -77,7 +80,8 @@ let find_capacite gr work_label begin_node next_node =
 let find_augmenting_path (gr:int graph) (work_gr:int graph) (n_debut:id) (n_fin:id) = 
 
   (* Prend une liste d'arcs en entrée et doit trouver Some arc valide ou retourner None *)
-  let rec find_aug_arc (gr:int graph) (work_gr: int graph) arc_list begin_node visited_nodes = match arc_list with
+  (* On lui donne la pile pour qu'il vérifie qu'il boucle pas *)
+  let rec find_aug_arc (gr:int graph) (work_gr: int graph) arc_list begin_node visited_nodes h = match arc_list with
     | [] -> None
 
     (* On décompose l'arc sortant en node d'arrivée et label *)
@@ -86,18 +90,18 @@ let find_augmenting_path (gr:int graph) (work_gr:int graph) (n_debut:id) (n_fin:
 
         let capacite = find_capacite gr work_label begin_node next_node in
 
-        if capacite >= 1 && not (List.mem next_node visited_nodes) then Some (next_node, work_label)
+        if capacite >= 1 && not (List.mem next_node visited_nodes) && not (List.mem next_node h) then Some (next_node, work_label)
         (* L'arc n'est pas valide *)
-        else find_aug_arc gr work_gr t begin_node visited_nodes
+        else find_aug_arc gr work_gr t begin_node visited_nodes h
       end
 
   in
 
-(*
-Conditions d'arrêt :
-_on atteint la node d'arrivée
-_on ne trouve pas d'arc aumgentant partant d'une node qui est la node de début
- *)
+  (*
+  Conditions d'arrêt :
+  _on atteint la node d'arrivée
+  _on ne trouve pas d'arc augmentant partant d'une node qui est la node de début
+  *)
 
   (* On créé une liste de nodes visitées, une pile et une valeur d'augmentation *)
   let rec find_aug_path gr work_gr n n_fin visited_nodes h = 
@@ -115,7 +119,7 @@ _on ne trouve pas d'arc aumgentant partant d'une node qui est la node de début
     in
 
     (* Si on atteint la node d'arrivée on a trouvé un chemin augmentant *)
-    (* Dans ce cas là même pas besoin de regarde les arcs sortants *)
+    (* Dans ce cas là même pas besoin de regarder les arcs sortants *)
     if n==n_fin then h else
 
       (* On étudie les arcs sortants de la node actuelle n *)
@@ -127,7 +131,7 @@ _on ne trouve pas d'arc aumgentant partant d'une node qui est la node de début
 
       (* Il y a des arcs sortants pour la node sélectionnée *)
       | l ->  begin (* Printf.printf "visited_nodes : "; List.iter (Printf.printf "%d ") visited_nodes; *)
-          match (find_aug_arc gr work_gr l n visited_nodes) with
+          match (find_aug_arc gr work_gr l n visited_nodes h) with
 
           (* Aucun arc augmentant pour cette node parmis les arcs sortants *)
           | None -> Printf.printf "Aucun arc augmentant trouvé partant de %d\n%!" n; print_heap h;
@@ -143,7 +147,7 @@ _on ne trouve pas d'arc aumgentant partant d'une node qui est la node de début
   find_aug_path gr work_gr n_debut n_fin [] [n_debut]
 
 
-
+(* Algorithme général : créé le graph de travail, convertit le graphe de référence en int graph et lance find_augmenting_path jusqu'au flot optimal *)
 
 let fulkerson (gr:'a graph) (conversion: 'a -> int) (node_debut:id) (node_fin:id) = 
   let work_graph = gmap gr (fun x -> 0) in
