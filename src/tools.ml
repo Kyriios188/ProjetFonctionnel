@@ -10,3 +10,5 @@ let gmap (gr:'a graph) f = e_fold gr (fun acu id1 id2 label -> new_arc acu id1 i
 let add_arc (gr:int graph) id1 id2 value = match (find_arc gr id1 id2) with
   | None -> Printf.printf "J'ai pas trouvé d'arc %d->%d%!" id1 id2; Printf.printf " Je met la valeur %d\n%!" value; new_arc gr id1 id2 value
   | Some l -> Printf.printf "%d->%d passe de %d à %d\n%!" id1 id2 l (l+value); new_arc gr id1 id2 (l+value);;
+
+let remove_negative_arcs (gr:int graph) = e_fold gr (fun acu id1 id2 label -> if label >= 0 then add_arc acu id1 id2 label else acu) (clone_nodes gr)

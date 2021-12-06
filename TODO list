@@ -1,6 +1,0 @@
--> écrire fonction export qui prend un string graph et le converti en format dot
-
--> écrire la librairie qui contient
-_le type chemin
-_la fonction qui cherche un chemin
-_la fonction qui renvoie de combien on peut augmenter la capacité d'une node

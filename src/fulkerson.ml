@@ -20,11 +20,6 @@ let heap_top (h:heap) = match h with
 
 let print_heap h = List.iter (Printf.printf "%d ") h; Printf.printf "\n%!"
 
-(* 
-TODO list 
-_ajouter le cas où on parcours un arc entrant (on remonte)
-_avec ce cas, utiliser le successeur pour pas revenir en arrière
-*)
 
 (* 
 On a une liste type [5; 4; 2; 0] qui retrace le chemin 0->2->4->5 
@@ -53,8 +48,8 @@ let update_work_graph ref_gr w_gr heap =
   let rec update_graph acu_gr h update_value = match h with
     | [] | [_] -> acu_gr
     | x::(y::t) -> begin
-        let un = update_graph (add_arc acu_gr x y update_value) (y::t) update_value in
-        update_graph (add_arc un y x (-update_value)) (y::t) update_value
+        let un = add_arc acu_gr y x (-update_value) in
+        update_graph (add_arc un x y update_value) (y::t) update_value
       end
   in
 
@@ -73,7 +68,7 @@ let find_capacite gr work_label begin_node next_node =
   match (find_arc gr begin_node next_node) with
   | None -> -work_label
   (* On vérifie si l'arc augmente la valeur et si la node d'arrivée n'est pas marquée *)
-  | Some label_arc_ref -> Printf.printf "On peut augmenter de %d\n%!" (label_arc_ref - work_label); (label_arc_ref - work_label)
+  | Some label_arc_ref -> label_arc_ref - work_label
 
 
 (* Ne modifie pas le graph donné, donne juste un chemin augmentant *)
@@ -140,7 +135,7 @@ let find_augmenting_path (gr:int graph) (work_gr:int graph) (n_debut:id) (n_fin:
             go_next gr work_gr n_fin (n::visited_nodes) h
 
           (* On a trouvé un arc valide, on se déplace *)
-          | Some (next_node, label) -> Printf.printf "trouvé arc %d->%d valide\n%!" n next_node; find_aug_path gr work_gr next_node n_fin visited_nodes (stack h next_node)
+          | Some (next_node, label) -> Printf.printf "DEPLACEMENT %d->%d\n%!" n next_node; find_aug_path gr work_gr next_node n_fin visited_nodes (stack h next_node)
         end
   in
 
@@ -155,14 +150,14 @@ let fulkerson (gr:'a graph) (conversion: 'a -> int) (node_debut:id) (node_fin:id
   let ref_graph = gmap gr (conversion) in
 
 
-  let rec recu_fulkerson (ref_gr: int graph) (work_gr: int graph) (h: heap) (deb:id) (fin:id)  = 
+  let rec recu_fulkerson (ref_gr: int graph) (work_gr: int graph) = 
     try 
-      match (find_augmenting_path ref_gr work_gr deb fin) with
+      match (find_augmenting_path ref_gr work_gr node_debut node_fin) with
       | [] -> failwith "je sais pas comment on arrive là honnêtement"
-      | result -> recu_fulkerson ref_gr (update_work_graph ref_gr work_gr result) [] deb fin
+      | result -> recu_fulkerson ref_gr (update_work_graph ref_gr work_gr result)
     with
-      Flot_optimal -> work_gr
+      Flot_optimal -> remove_negative_arcs work_gr
 
   in
 
-  recu_fulkerson ref_graph work_graph [] node_debut node_fin
+  recu_fulkerson ref_graph work_graph
